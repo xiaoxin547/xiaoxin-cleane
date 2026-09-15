@@ -10,17 +10,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +44,6 @@ data class GameItem(
 
 @Composable
 fun XinCleanerApp() {
-    // 定义12款游戏的颜色和匹配规则
     val games = listOf(
         GameItem(1, "三角洲", "tmgp.dfm|delta|dfm", Color(0xFFED1C24)),
         GameItem(2, "王者荣耀", "tmgp.sgame|sgame|wangzhe", Color(0xFF00FF66)),
@@ -56,8 +59,10 @@ fun XinCleanerApp() {
         GameItem(12, "暗区国际服", "com.proximabeta.mf.uamo", Color(0xFFFFCC33))
     )
 
-    var selectedGame by remember { mutableStateOf<GameItem?>(null) }
+    var isCleaning by remember { mutableStateOf(false) }
     var logs by remember { mutableStateOf("等待选择游戏...") }
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -93,8 +98,18 @@ fun XinCleanerApp() {
                     GlassCard(
                         game = game,
                         onClick = {
-                            selectedGame = game
-                            logs = "开始清理 ${game.name}..."
+                            if (!isCleaning) {
+                                isCleaning = true
+                                logs = "正在申请 Root 权限并清理 ${game.name}..."
+                                scope.launch {
+                                    // 在 IO 线程执行 Root 命令
+                                    val result = withContext(Dispatchers.IO) {
+                                        RootShell.execute(CleanScripts.buildScript(game))
+                                    }
+                                    logs = result
+                                    isCleaning = false
+                                }
+                            }
                         }
                     )
                 }
@@ -104,7 +119,7 @@ fun XinCleanerApp() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(150.dp)
                     .padding(top = 16.dp)
                     .background(Color(0x44000000), RoundedCornerShape(16.dp))
                     .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(16.dp))
@@ -113,8 +128,9 @@ fun XinCleanerApp() {
                 Text(
                     text = logs,
                     color = Color(0xFF00FFCC),
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp,
+                    modifier = Modifier.verticalScroll(scrollState)
                 )
             }
         }
