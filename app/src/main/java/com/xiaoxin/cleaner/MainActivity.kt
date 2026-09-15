@@ -34,6 +34,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+// ================= 核心：补上漏掉的 GameItem =================
+data class GameItem(
+    val id: Int,
+    val name: String,
+    val pattern: String,
+    val color: Color
+)
+
 // 全局状态
 enum class AppScreen { SPLASH, HOME, CONFIRM_CLEAN, SHOW_LOGS, REBOOT_OPTIONS }
 enum class RebootChoice { FULL, SOFT, NONE }
@@ -52,7 +60,7 @@ class MainActivity : ComponentActivity() {
                 selectedGame = selectedGame,
                 logs = logs,
                 onAgree = { screen = AppScreen.HOME },
-                onDisagree = { finish() }, // 拒绝免责声明直接退出App
+                onDisagree = { finish() },
                 onGameClick = { game ->
                     selectedGame = game
                     screen = AppScreen.CONFIRM_CLEAN
@@ -111,7 +119,6 @@ fun XinCleanerApp(
             .fillMaxSize()
             .background(darkBg)
             .drawBehind {
-                // 赛博朋克霓虹流光背景
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(Color(0x3300FFFF), Color.Transparent),
@@ -142,7 +149,6 @@ fun XinCleanerApp(
     }
 }
 
-// -------- 1. 免责声明弹窗 --------
 @Composable
 fun DisclaimDialog(onAgree: () -> Unit, onDisagree: () -> Unit) {
     Dialog(onDismissRequest = {}) {
@@ -181,7 +187,6 @@ fun DisclaimDialog(onAgree: () -> Unit, onDisagree: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // 拒绝按钮
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -195,7 +200,6 @@ fun DisclaimDialog(onAgree: () -> Unit, onDisagree: () -> Unit) {
                     ) {
                         Text("拒绝并退出", color = Color.White, fontSize = 14.sp)
                     }
-                    // 同意按钮
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -215,7 +219,6 @@ fun DisclaimDialog(onAgree: () -> Unit, onDisagree: () -> Unit) {
     }
 }
 
-// -------- 2. 主界面 --------
 @Composable
 fun HomeContent(onGameClick: (GameItem) -> Unit) {
     val games = listOf(
@@ -261,7 +264,6 @@ fun HomeContent(onGameClick: (GameItem) -> Unit) {
     }
 }
 
-// -------- 3. 确认清理弹窗 --------
 @Composable
 fun ConfirmDialog(gameName: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
     Dialog(onDismissRequest = { onCancel() }) {
@@ -324,7 +326,6 @@ fun ConfirmDialog(gameName: String, onConfirm: () -> Unit, onCancel: () -> Unit)
     }
 }
 
-// -------- 4. 实时日志弹窗 --------
 @Composable
 fun LogDialog(logs: String) {
     val scrollState = rememberScrollState()
@@ -367,7 +368,6 @@ fun LogDialog(logs: String) {
     }
 }
 
-// -------- 5. 结尾重启三选项弹窗 --------
 @Composable
 fun RebootDialog(onSelect: (RebootChoice) -> Unit) {
     Dialog(onDismissRequest = {}) {
@@ -396,7 +396,6 @@ fun RebootDialog(onSelect: (RebootChoice) -> Unit) {
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
                 
-                // 选项1：完全重启
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -411,7 +410,6 @@ fun RebootDialog(onSelect: (RebootChoice) -> Unit) {
                     Text("完全重启（会丢失临时 Root）", color = Color.White, fontSize = 14.sp)
                 }
 
-                // 选项2：软重启
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -426,7 +424,6 @@ fun RebootDialog(onSelect: (RebootChoice) -> Unit) {
                     Text("软重启（保留临时 Root，推荐）", color = Color.White, fontSize = 14.sp)
                 }
 
-                // 选项3：不重启
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
