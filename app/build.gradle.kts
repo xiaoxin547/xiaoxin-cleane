@@ -18,7 +18,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            // 自动使用 debug 签名，解决 unsigned 无法安装的问题
+            // 核心修复：使用 debug 签名，解决未签名无法安装的问题
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -50,4 +50,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    // 核心依赖：让你的液态玻璃卡片和弹窗拥有丝滑动画
+    implementation("androidx.compose.animation:animation:1.6.0")
 }
